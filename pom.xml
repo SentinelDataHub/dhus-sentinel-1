@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <properties>
+      <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+   </properties>
+   
+   <groupId>fr.gael.dhus</groupId>
+   <artifactId>dhus-addon-sentinel-1</artifactId>
+   <packaging>jar</packaging>
+   <version>1.0.7-osf</version>
+
+   <name>DHuS - Sentinel-1 Addon</name>
+
+   <dependencies>
+      <dependency>
+         <groupId>fr.gael.drb</groupId>
+         <artifactId>drbx-cortex-topic-sentinel-1</artifactId>
+         <version>1.0.5</version>
+         <exclusions>
+            <exclusion>
+               <artifactId>drbx-impl-netcdf</artifactId>
+               <groupId>fr.gael.drb</groupId>
+            </exclusion>
+            <exclusion>
+               <artifactId>drbx-cortex</artifactId>
+               <groupId>fr.gael.drb</groupId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>fr.gael.drb</groupId>
+         <artifactId>drbx-image</artifactId>
+         <version>1.2</version>
+         <exclusions>
+            <exclusion>
+               <groupId>fr.gael.drb</groupId>
+               <artifactId>drb</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>fr.gael.drb</groupId>
+               <artifactId>drbx-cortex</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+           
+      
+      <dependency>
+         <groupId>fr.gael.drb</groupId>
+         <artifactId>drbx-cortex</artifactId>
+         <version>1.0.4</version>
+         <exclusions>         
+            <exclusion>
+               <groupId>fr.gael.drb</groupId>
+               <artifactId>drb</artifactId>
+            </exclusion>
+         <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+         </exclusion>
+         </exclusions>
+      </dependency>
+      
+      <dependency>
+         <groupId>fr.gael.drb</groupId>
+         <artifactId>drbx-impl-tiff</artifactId>
+         <version>1.2.2</version>
+      </dependency>
+      
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.2</version>
+            <configuration>
+               <source>1.7</source>
+               <target>1.7</target>
+               <encoding>ISO-8859-1</encoding>
+               <compilerArgs>
+                  <arg>-Xlint:all,-options,-path</arg>
+               </compilerArgs>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+               <archive>
+                  <manifest>
+                     <addDefaultImplementationEntries>
+                        true
+                     </addDefaultImplementationEntries>
+                  </manifest>
+               </archive>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.1.2</version>
+            <executions>
+               <execution>
+                  <id>attach-sources</id>
+                  <goals>
+                     <goal>jar-no-fork</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+      
+   <repositories>
+      <repository>
+         <id>external dependencies</id>
+<!-- repository https://copernicus.serco.eu/repository/nexus/content/repositories/releases
+     used to proxy gael's resources requires credentials
+     Using alternative source repository. -->
+         <url>https://repository.gael.fr/nexus/content/groups/public</url>
+      </repository>
+   </repositories>
+
+   <distributionManagement>
+      <repository>
+         <uniqueVersion>true</uniqueVersion>
+         <id>osf-delivery</id>
+         <name>OSF Releases Repository</name>
+         <url>
+            https://copernicus.serco.eu/repository/nexus/content/repositories/OSF_releases
+         </url>
+         <layout>default</layout>
+      </repository>
+   </distributionManagement>
+
+   <issueManagement>
+      <system>Jira</system>
+      <url>https://copernicus.serco.eu/jira-osf</url>
+   </issueManagement>
+
+   <scm>
+      <connection>scm:git:https://github.com/SentinelDataHub/dhus-sentinel-1</connection>
+      <developerConnection>scm:git:https://github.com/SentinelDataHub/dhus-sentinel-1</developerConnection>
+      <tag>HEAD</tag>
+      <url>https://github.com/SentinelDataHub/dhus-sentinel-1</url>
+   </scm>
+
+</project>
