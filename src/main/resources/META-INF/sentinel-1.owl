@@ -141,7 +141,7 @@
          <metadataType id="filename"
                        name="Filename"
                        contentType="text/plain"
-                       category="">
+                       category="summary">
             <solrField name="filename"
                        type="string"
                        required="true"/>
@@ -449,11 +449,11 @@
 
          <!-- name too long: removed category to not stitch the view window -->
          <metadata queryable="filename"
-            category=""
+            category="summary"
             name="Filename"
             type="text/plain">
                {name()}
-         </metadata>,
+</metadata>,
 
          <metadata queryable="resolutionDetail"
             category="product"
@@ -732,6 +732,13 @@
    <rdf:Description rdf:about="&s1;manifestFootPrintProduct">
       <dhus:metadataExtractor  rdf:parseType="Literal">
       <![CDATA[
+
+         declare namespace utils="java:fr.gael.drb.cortex.topic.sentinel1.Sentinel1Utils";
+
+         <!-- ============================================================== -->
+         <!-- FUNCTIONS                                                      -->
+         <!-- ============================================================== -->
+
          declare function local:trim ($arg as xs:string) as xs:string
          {
             replace(replace(replace($arg,'\s+$',''),'^\s+',''), '\s+', ' ')
@@ -782,33 +789,48 @@
                  metadataWrap/xmlData/frameSet/frame[1]/footPrint/@srsName)
          };
 
-         let $points_count := fn:count(fn:tokenize(
-                                 local:trim(local:points())," "))
+         <!-- ============================================================== -->
+         <!-- VARIABLES                                                      -->
+         <!-- ============================================================== -->
+
+         let $frameSequence := manifest.safe/XFDU/metadataSection/metadataObject[fn:matches(@ID,".+FrameSet")]/metadataWrap/xmlData/frameSet/frame
+
+         let $footprint :=
+            if (fn:count($frameSequence) != 1)
+            then
+               utils:makeConcaveHull(
+                  fn:string-join((for $i in $frameSequence return data($i/footPrint/coordinates)), " "))
+            else
+               local:points()
+
+         <!-- ============================================================== -->
+         <!-- EXTRACTIONS                                                    -->
+         <!-- ============================================================== -->
+
          return
-         if ($points_count<4)
-         then
-            trace ((),
-               concat ("XQUERY WARN: Not enough coordinates in footprint (",
-                  $points_count, ")"))
-         else
          (
+            <!-- GML FOOTPRINT -->
             <metadata queryable="GMLfootprint"
                       category="product"
                       name="Footprint"
                       type="application/gml+xml">
+               {
                <gml:Polygon srsName="{local:checkSrsName(local:srsName())}"
                          xmlns:gml="http://www.opengis.net/gml">
                   <gml:outerBoundaryIs>
                      <gml:LinearRing>
                         <gml:coordinates>
                         {
-                           local:formatCoordinates(local:points(), fn:false())
+                           local:formatCoordinates($footprint, fn:false())
                         }
                         </gml:coordinates>
                      </gml:LinearRing>
                   </gml:outerBoundaryIs>
                </gml:Polygon>
-            </metadata>,
+               }
+             </metadata>,
+
+            <!-- JTS FOOTPRINT -->
             <metadata queryable="footprint"
                       category="product"
                       name="JTS footprint"
@@ -818,7 +840,7 @@
                   fn:replace (
                   fn:replace (
                   fn:replace (
-                     local:formatCoordinates(local:points(), fn:true()), 
+                     local:formatCoordinates($footprint, fn:true()),
                         " +", "@"), "@*,@*", " "), "@", ","), "))")
                    (: switch " " with "," :)
             }
@@ -1069,6 +1091,8 @@
                        name="Timeliness Category"
                        contentType="text/plain"
                        category="product">
+            <solrField name="timeliness"
+                       type="text_general"/>
          </metadataType>
 
       </dhus:metadataTypes>
@@ -1121,7 +1145,7 @@
                 productType)}
          </metadata>,
 
-          <metadata
+          <metadata queryable="timeliness"
             category="product"
             name="Timeliness Category"
             type="text/plain">
@@ -1187,6 +1211,8 @@
                        name="Timeliness Category"
                        contentType="text/plain"
                        category="product">
+            <solrField name="timeliness"
+                       type="text_general"/>
          </metadataType>
 
       </dhus:metadataTypes>
@@ -1239,7 +1265,7 @@
                 productType)}
          </metadata>,
 
-         <metadata
+         <metadata queryable="timeliness"
             category="product"
             name="Timeliness Category"
             type="text/plain">
@@ -1253,17 +1279,43 @@
       ]]>
       </dhus:metadataExtractor>
    </rdf:Description>
-
+   
    <rdf:Description rdf:about="&s1;product">
-
       <rdfs:subClassOf rdf:resource="&s1;manifestFootPrintProduct"/>
-
       <dhus:identifier rdf:parseType="Literal">
       <![CDATA[
          fn:tokenize(name (.), '\.')[1]
       ]]>
       </dhus:identifier>
+   </rdf:Description>
 
+   <rdf:Description rdf:about="&s1;IWlevel1product">
+      <img:descriptor rdf:parseType="Literal" xmlns:img="&img;">
+         <img:collection xmlns:img="&img;">
+            <img:raster name="preview">
+               <img:source>preview/quick-look.png</img:source>
+            </img:raster>
+         </img:collection>
+      </img:descriptor>
+
+      <img:rendering rdf:parseType="Literal" xmlns:img="&img;">
+         <img:operator name="pass-flip">
+            <img:script language="beanshell" version="1.0">
+               ParameterBlock transpose_pb = new ParameterBlock();
+               transpose_pb.addSource(source);
+
+               if (fr.gael.drb.cortex.topic.sentinel1.Sentinel1Utils.isAscending(source))
+                  transpose_pb.add(javax.media.jai.operator.TransposeDescriptor.FLIP_VERTICAL);
+               else
+                  transpose_pb.add(javax.media.jai.operator.TransposeDescriptor.FLIP_HORIZONTAL);
+
+               return JAI.create("transpose",transpose_pb);
+            </img:script>
+         </img:operator>
+      </img:rendering>
+   </rdf:Description>
+
+   <rdf:Description rdf:about="&s1;EWlevel1product">
       <img:descriptor rdf:parseType="Literal" xmlns:img="&img;">
          <img:collection xmlns:img="&img;">
             <img:raster name="preview">
@@ -1287,7 +1339,32 @@
             </img:script>
          </img:operator>
       </img:rendering>
-
    </rdf:Description>
 
+   <rdf:Description rdf:about="&s1;SMlevel1product">
+      <img:descriptor rdf:parseType="Literal" xmlns:img="&img;">
+         <img:collection xmlns:img="&img;">
+            <img:raster name="preview">
+               <img:source>preview/quick-look.png</img:source>
+            </img:raster>
+         </img:collection>
+      </img:descriptor>
+
+      <img:rendering rdf:parseType="Literal" xmlns:img="&img;">
+         <img:operator name="pass-flip">
+            <img:script language="beanshell" version="1.0">
+               ParameterBlock transpose_pb = new ParameterBlock();
+               transpose_pb.addSource(source);
+
+               if (fr.gael.drb.cortex.topic.sentinel1.Sentinel1Utils.isAscending(source))
+                  transpose_pb.add(javax.media.jai.operator.TransposeDescriptor.FLIP_VERTICAL);
+               else
+                  transpose_pb.add(javax.media.jai.operator.TransposeDescriptor.FLIP_HORIZONTAL);
+
+               return JAI.create("transpose",transpose_pb);
+            </img:script>
+         </img:operator>
+      </img:rendering>
+   </rdf:Description>
+     
 </rdf:RDF>
