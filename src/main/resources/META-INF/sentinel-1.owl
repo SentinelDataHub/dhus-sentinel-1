@@ -388,7 +388,7 @@
                then "April 3rd, 2014"
                else
                   if ($Value_Platform_Number = "B")
-                  then "April 22th, 2016"
+                  then "April 25th, 2016"
                   else ""
             }
          </metadata>,

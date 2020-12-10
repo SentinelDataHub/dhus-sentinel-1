@@ -12,7 +12,7 @@
    <groupId>fr.gael.dhus</groupId>
    <artifactId>dhus-addon-sentinel-1</artifactId>
    <packaging>jar</packaging>
-   <version>1.0.19-osf</version>
+   <version>1.0.20-osf</version>
 
    <name>DHuS - Sentinel-1 Addon</name>
 
@@ -124,7 +124,7 @@
 <!-- repository https://copernicus.serco.eu/repository/nexus/content/repositories/releases
      used to proxy gael's resources requires credentials
      Using alternative source repository. -->
-         <url>https://repository.gael.fr/nexus/content/groups/public</url>
+         <url>https://repository.gael-systems.com/repository/public</url>
       </repository>
    </repositories>
 
